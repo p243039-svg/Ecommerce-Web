@@ -6,11 +6,8 @@ const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 async function inspect() {
-  const { data: prods } = await supabase.from('products').select('name, is_active, category_id').limit(5);
-  console.log('Sample Products:', prods);
-
-  const { data: cats } = await supabase.from('categories').select('*');
-  console.log('All Categories:', cats);
+  const { data: users, error: userError } = await supabase.from('users').select('*');
+  console.log('All Users:', users, 'Error:', userError);
 }
 
 inspect();

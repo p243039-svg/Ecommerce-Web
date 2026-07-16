@@ -70,55 +70,82 @@ export const useAuthStore = create(persist((set, get) => ({
     },
     login: async (email, password) => {
         set({ isLoading: true });
-        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) {
+        try {
+            const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+            if (error) {
+                set({ isLoading: false });
+                return { success: false, error: error.message };
+            }
+            if (data.user) {
+                const userData = await syncUserProfile(data.user);
+                set({ user: userData, isLoading: false });
+                return { success: true };
+            }
             set({ isLoading: false });
-            return { success: false, error: error.message };
+            return { success: false, error: "Login failed" };
+        } catch (err) {
+            set({ isLoading: false });
+            return { success: false, error: err.message || "Login failed" };
         }
-        if (data.user) {
-            const userData = await syncUserProfile(data.user);
-            set({ user: userData, isLoading: false });
-            return { success: true };
-        }
-        set({ isLoading: false });
-        return { success: false, error: "Login failed" };
     },
     signup: async (email, password, first_name, last_name) => {
         set({ isLoading: true });
-        const { data, error } = await supabase.auth.signUp({
-            email,
-            password,
-            options: { data: { first_name, last_name } },
-        });
-        if (error) {
-            set({ isLoading: false });
-            return { success: false, error: error.message };
-        }
-        if (data.user) {
-            // If Supabase auto-confirms, we try to sync immediately
-            const userData = await syncUserProfile({
-                id: data.user.id,
-                email: data.user.email,
-                user_metadata: { first_name, last_name }
+        try {
+            const { data, error } = await supabase.auth.signUp({
+                email,
+                password,
+                options: { data: { first_name, last_name } },
             });
-            set({ user: userData, isLoading: false });
-            return { success: true };
+            if (error) {
+                set({ isLoading: false });
+                return { success: false, error: error.message };
+            }
+            if (data.user) {
+                // If Supabase auto-confirms, we try to sync immediately
+                const userData = await syncUserProfile({
+                    id: data.user.id,
+                    email: data.user.email,
+                    user_metadata: { first_name, last_name }
+                });
+                set({ user: userData, isLoading: false });
+                return { success: true };
+            }
+            set({ isLoading: false });
+            return { success: false, error: "Signup failed" };
+        } catch (err) {
+            set({ isLoading: false });
+            return { success: false, error: err.message || "Signup failed" };
         }
-        set({ isLoading: false });
-        return { success: false, error: "Signup failed" };
     },
     logout: async () => {
         try {
-            await supabase.auth.signOut();
-        }
-        finally {
+            await supabase.auth.signOut({ scope: "global" });
+        } catch (err) {
+            console.warn("Supabase signOut error:", err);
+        } finally {
             set({ user: null });
             initializationPromise = null;
             if (typeof window !== "undefined") {
-                // Wipe everything related to auth
-                Object.keys(localStorage)
-                    .filter((k) => k.includes("-auth-token") || k.includes("auth"))
-                    .forEach((k) => localStorage.removeItem(k));
+                // Wipe everything related to auth in localStorage and sessionStorage
+                [localStorage, sessionStorage].forEach((storage) => {
+                    try {
+                        Object.keys(storage)
+                            .filter((k) => k.includes("sb-") || k.includes("auth") || k.includes("token") || k.includes("session"))
+                            .forEach((k) => storage.removeItem(k));
+                    } catch (e) {}
+                });
+                
+                // Clear cookies
+                try {
+                    if (typeof document !== "undefined") {
+                        document.cookie.split(";").forEach((cookie) => {
+                            const eqPos = cookie.indexOf("=");
+                            const name = eqPos > -1 ? cookie.substring(0, eqPos).trim() : cookie.trim();
+                            document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=" + window.location.hostname;
+                            document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
+                        });
+                    }
+                } catch (e) {}
             }
         }
     },
@@ -172,4 +199,7 @@ export const useAuthStore = create(persist((set, get) => ({
         });
     },
     isAdmin: () => get().user?.role === "admin",
-}), { name: "antique-auth-session" }));
+}), {
+    name: "antique-auth-session",
+    partialize: (state) => ({ user: state.user }),
+}));

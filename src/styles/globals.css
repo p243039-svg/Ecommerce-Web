@@ -39,6 +39,10 @@
   --animate-pulse-soft: pulse-soft 2s ease-in-out infinite;
   --animate-mesh-gradient: mesh-gradient 15s ease infinite;
   --animate-marquee: marquee 30s linear infinite;
+  --animate-cursor-blink: cursor-blink 0.8s step-end infinite;
+  --animate-logo-reveal: logo-reveal 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  --animate-title-reveal: title-reveal 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  --animate-letter-reveal: letter-reveal 0.6s cubic-bezier(0.25, 1, 0.5, 1) forwards;
 }
 
 @utility mesh-gradient {
@@ -47,44 +51,135 @@
   animation: mesh-gradient 15s ease infinite;
 }
 
-/* ===== Light Mode (Default) ===== */
+/* ===== Permanent Light Mint/Sage Mode (Default) ===== */
 :root {
-  --background: #FAFAF9;
-  --foreground: #1C1917;
-  --surface: #FFFFFF;
-  --surface-hover: #F5F5F4;
-  --primary: #B8860B;
-  --primary-hover: #996F09;
-  --primary-fg: #FFFFFF;
-  --accent: #78716C;
-  --accent-fg: #FFFFFF;
-  --muted: #F5F5F4;
-  --muted-fg: #78716C;
-  --border: #E7E5E4;
-  --ring: #B8860B;
-  --error: #DC2626;
-  --success: #16A34A;
-  --warning: #D97706;
+  --background: #e4ede8;
+  --foreground: #1a3024;
+  --surface: #ffffff;
+  --surface-hover: #f5faf7;
+  --primary: #1b4332;
+  --primary-hover: #2d5a47;
+  --primary-fg: #ffffff;
+  --accent: #10b981;
+  --accent-fg: #ffffff;
+  --muted: #edf4f1;
+  --muted-fg: #5c7066;
+  --border: rgba(27, 67, 50, 0.1);
+  --ring: #1b4332;
+  --error: #dc2626;
+  --success: #16a34a;
+  --warning: #d97706;
 }
 
-/* ===== Dark Mode ===== */
-.dark {
-  --background: #0C0A09;
-  --foreground: #FAFAF9;
-  --surface: #1C1917;
-  --surface-hover: #292524;
-  --primary: #D4A843;
-  --primary-hover: #E0BC5E;
-  --primary-fg: #0C0A09;
-  --accent: #A8A29E;
-  --accent-fg: #0C0A09;
-  --muted: #292524;
-  --muted-fg: #A8A29E;
-  --border: #44403C;
-  --ring: #D4A843;
-  --error: #F87171;
-  --success: #4ADE80;
-  --warning: #FBBF24;
+/* ===== PERMANENT LIGHT MINT THEME OVERRIDES FOR HARDCODED CLASSES ===== */
+/* Override bg-[#fffdfa] (light beige card) to be clean white surface */
+.bg-\[\#fffdfa\], .bg-\[\#fffdfa\]\/95, header.bg-\[\#fffdfa\]\/95 {
+  background-color: #ffffff !important;
+}
+
+/* Apply light mint gradient background to body and html */
+html, body {
+  background-image: linear-gradient(135deg, #f2faf5 0%, #e4ede8 100%) !important;
+  background-attachment: fixed !important;
+  background-color: #e4ede8 !important;
+  scroll-behavior: smooth;
+}
+
+/* Custom scrollbar rules to override default browser blue/green scroll track */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.22);
+  border-radius: 99px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.35);
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+/* Make all main page wrappers transparent so the body gradient is fully visible */
+div.flex.flex-col.overflow-x-hidden.bg-\[\#fffdfa\],
+div.min-h-screen.bg-\[\#f4ebe0\],
+div.min-h-screen.bg-\[\#f9f7f4\],
+div.min-h-screen.bg-\[\#fdfbf7\],
+section.bg-\[\#f4ece1\]\/40,
+section.bg-\[\#fbf9f6\] {
+  background-image: none !important;
+  background-color: transparent !important;
+}
+
+/* Input/form overlays background */
+.bg-\[\#f4ebe0\]\/50 {
+  background-color: rgba(27, 67, 50, 0.05) !important;
+}
+
+/* Muted backgrounds (e.g. Sold out badges, scroll tabs) */
+.bg-\[\#e2d6c5\]\/80 {
+  background-color: rgba(27, 67, 50, 0.08) !important;
+}
+
+/* Override text-[#4a3f35] (primary text) to be deep forest green */
+.text-\[\#4a3f35\], .text-\[\#332b24\] {
+  color: #1a3024 !important;
+}
+
+.hover\:text-\[\#4a3f35\]:hover {
+  color: #1a3024 !important;
+}
+
+/* Override text-[#8c7e6c] / text-[#bfb3a0] to be legible muted sage */
+.text-\[\#8c7e6c\], .text-\[\#bfb3a0\] {
+  color: #5c7066 !important;
+}
+
+/* Border overrides mapping e2d6c5 borders to light border colors */
+.border-\[\#e2d6c5\], .border-\[\#e2d6c5\]\/60, .border-\[\#e2d6c5\]\/20, .border-\[\#e2d6c5\]\/30 {
+  border-color: rgba(27, 67, 50, 0.1) !important;
+}
+
+/* Secondary/primary buttons bg-[#4a3f35] overrides to deep forest green */
+.bg-\[\#4a3f35\] {
+  background-color: #1b4332 !important;
+  color: #ffffff !important;
+}
+
+.bg-\[\#4a3f35\] .text-\[\#f4ebe0\], .bg-\[\#4a3f35\] .text-\[\#fffdfa\], .bg-\[\#4a3f35\] svg {
+  color: #ffffff !important;
+}
+
+.hover\:bg-amber-900:hover, .hover\:bg-\[\#f4ece1\]:hover {
+  background-color: #2d5a47 !important;
+  color: #ffffff !important;
+}
+
+/* Announcements and sliders highlights in light sage mode */
+.bg-amber-800\/10 {
+  background-color: rgba(27, 67, 50, 0.08) !important;
+}
+.text-amber-900, .text-amber-800 {
+  color: #1b4332 !important;
+}
+.bg-amber-800 {
+  background-color: #1b4332 !important;
+  color: #ffffff !important;
+}
+.bg-amber-50\/60 {
+  background-color: rgba(27, 67, 50, 0.05) !important;
+  border-color: rgba(27, 67, 50, 0.1) !important;
+}
+
+/* Badge tags like LUXURY/FOOTWEAR on product cards */
+.bg-\[\#fffdfa\]\/90 {
+  background-color: #edf4f1 !important;
+  color: #5c7066 !important;
 }
 
 /* ===== Keyframes ===== */
@@ -194,6 +289,47 @@
   }
 }
 
+@keyframes cursor-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+@keyframes logo-reveal {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes title-reveal {
+  from {
+    opacity: 0;
+    letter-spacing: -0.1em;
+  }
+  to {
+    opacity: 1;
+    letter-spacing: 0.4em;
+  }
+}
+
+@keyframes letter-reveal {
+  from {
+    opacity: 0;
+    filter: blur(8px);
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+    transform: scale(1);
+  }
+}
+
+
 @keyframes shimmer {
   0% {
     background-position: -200% 0;
@@ -253,24 +389,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* ===== Custom Scrollbar ===== */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
 
-::-webkit-scrollbar-track {
-  background: var(--muted);
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--accent);
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--primary);
-}
 
 /* ===== Glassmorphism Utility ===== */
 .glass {
@@ -311,4 +430,24 @@ body {
 
 .transition-slow {
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ===== Underline drawing and shimmer sweep animation ===== */
+@keyframes line-shimmer {
+  0% {
+    background-position: 150% 0;
+  }
+  100% {
+    background-position: -150% 0;
+  }
+}
+
+.underline-line {
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.8) 50%, rgba(255, 255, 255, 0.05) 100%);
+}
+
+.underline-shimmer-active {
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.05) 30%, rgba(255, 255, 255, 0.95) 50%, rgba(255, 255, 255, 0.05) 70%, rgba(255, 255, 255, 0.05) 100%);
+  background-size: 200% 100%;
+  animation: line-shimmer 0.8s cubic-bezier(0.25, 1, 0.5, 1) 0.8s 1 forwards;
 }

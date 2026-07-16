@@ -69,6 +69,7 @@ export default function AppRoutes() {
         <Route path="products" element={<AdminProducts />} />
         <Route path="products/:id" element={<ProductEdit />} />
         <Route path="reports" element={<Reports />} />
+        <Route path="analytics" element={<Reports />} />
         <Route path="settings" element={<Settings />} />
         <Route path="variants" element={<Variants />} />
       </Route>

@@ -147,6 +147,8 @@ class MockQueryBuilder {
     this.ilikeFilters = [];
     this.limitVal = null;
     this.orderVal = null;
+    this.isMutation = false;
+    this.mutationData = null;
   }
   
   select(queryStr = '*', options = {}) {
@@ -177,9 +179,48 @@ class MockQueryBuilder {
     this.orderVal = { column, options };
     return this;
   }
+
+  insert(data) {
+    this.isMutation = true;
+    this.mutationData = data;
+    return this;
+  }
+
+  update(data) {
+    this.isMutation = true;
+    this.mutationData = data;
+    return this;
+  }
+
+  upsert(data, options = {}) {
+    this.isMutation = true;
+    this.mutationData = data;
+    return this;
+  }
+
+  delete() {
+    this.isMutation = true;
+    this.mutationData = [];
+    return this;
+  }
   
   async execute() {
     await initializeData();
+    
+    if (this.isMutation) {
+      const items = Array.isArray(this.mutationData) ? this.mutationData : [this.mutationData];
+      const processed = items.map(item => {
+        if (typeof item === 'object' && item !== null) {
+          return {
+            id: item.id || `mock-${this.table}-${Math.floor(Math.random() * 1000000)}`,
+            created_at: new Date().toISOString(),
+            ...item
+          };
+        }
+        return item;
+      });
+      return { data: processed, error: null, count: processed.length };
+    }
     
     let source = [];
     if (this.table === 'categories') {
@@ -244,7 +285,7 @@ class MockQueryBuilder {
   
   async maybeSingle() {
     const { data } = await this.execute();
-    return { data: data[0] || null, error: null };
+    return { data: Array.isArray(data) ? (data[0] || null) : data, error: null };
   }
   
   async single() {
@@ -257,53 +298,13 @@ const mockClient = {
   auth: mockAuth,
   
   from(table) {
-    const builder = new MockQueryBuilder(table);
-    
-    // Stub mutations inside from() return object directly
-    builder.insert = function(data) {
-      return {
-        async then(onfulfilled) {
-          return onfulfilled({ data, error: null });
-        }
-      };
-    };
-    
-    builder.update = function(data) {
-      return {
-        eq(col, val) {
-          return {
-            async then(onfulfilled) {
-              return onfulfilled({ data, error: null });
-            }
-          };
-        }
-      };
-    };
-    
-    builder.delete = function() {
-      return {
-        eq(col, val) {
-          return {
-            async then(onfulfilled) {
-              return onfulfilled({ data: [], error: null });
-            }
-          };
-        },
-        neq(col, val) {
-          return {
-            async then(onfulfilled) {
-              return onfulfilled({ data: [], error: null });
-            }
-          };
-        }
-      };
-    };
-    
-    return builder;
+    return new MockQueryBuilder(table);
   }
 };
 
 // Auto initialize
 initializeData();
 
-export const supabase = mockClient;
+// Switch to realSupabase to connect to your live Supabase database.
+// Switch to mockClient to run with an offline mock database.
+export const supabase = realSupabase;

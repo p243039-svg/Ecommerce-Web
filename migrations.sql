@@ -51,6 +51,8 @@ CREATE TABLE products (
   review_count INTEGER DEFAULT 0,
   is_featured BOOLEAN DEFAULT false,
   is_active BOOLEAN DEFAULT true,
+  tags TEXT[] DEFAULT '{}',
+  reviews JSONB DEFAULT '[]'::jsonb,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL
 );
 
@@ -330,8 +332,8 @@ INSERT INTO product_images (product_id, url, is_primary, sort_order) VALUES
 
 -- p2 Architectural Wool Coat
 ('p2', 'https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=1000&q=80', true, 0),
-('p2', 'https://images.unsplash.com/photo-1544022613-e87ce7526ed1?w=1000&q=80', false, 1),
-('p2', 'https://images.unsplash.com/photo-1520639889313-7272a74b1c73?w=1000&q=80', false, 2),
+('p2', 'https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=1000&q=80', false, 1),
+('p2', 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=1000&q=80', false, 2),
 ('p2', 'https://images.unsplash.com/photo-1463453091185-61582044d556?w=1000&q=80', false, 3),
 
 -- p3 Suede Overcoat
@@ -413,7 +415,7 @@ INSERT INTO product_images (product_id, url, is_primary, sort_order) VALUES
 ('p15', 'https://images.unsplash.com/photo-1463453091185-61582044d556?w=1000&q=80', false, 3),
 
 -- p16 Rain-Proof Trench
-('p16', 'https://images.unsplash.com/photo-1544022613-e87ce7526ed1?w=1000&q=80', true, 0),
+('p16', 'https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=1000&q=80', true, 0),
 ('p16', 'https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=1000&q=80', false, 1),
 ('p16', 'https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?w=1000&q=80', false, 2),
 ('p16', 'https://images.unsplash.com/photo-1512374382149-233c42b6a83b?w=1000&q=80', false, 3),
@@ -583,7 +585,7 @@ INSERT INTO product_images (product_id, url, is_primary, sort_order) VALUES
 ('p43', 'https://images.unsplash.com/photo-1598033129183-c4f50c717658?w=1000&q=80', false, 3),
 
 -- p44 Suede Desert Boot
-('p44', 'https://images.unsplash.com/photo-1520639889313-7272a74b1c73?w=1000&q=80', true, 0),
+('p44', 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=1000&q=80', true, 0),
 ('p44', 'https://images.unsplash.com/photo-1549298916-b41d501d3772?w=1000&q=80', false, 1),
 ('p44', 'https://images.unsplash.com/photo-1535043934128-cf0b28d52f95?w=1000&q=80', false, 2),
 ('p44', 'https://images.unsplash.com/photo-1531310197839-ccf54634509e?w=1000&q=80', false, 3),

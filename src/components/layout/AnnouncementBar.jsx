@@ -8,11 +8,11 @@ const AnnouncementBar = () => {
         { icon: ShoppingBag, text: "LIMITED TIME ONLY — SPRING COLLECTION DROPPING SOON" },
         { icon: Truck, text: `FREE GLOBAL SHIPPING ON ORDERS OVER $${settings.freeShippingThreshold}` },
     ];
-    return (<div className="relative w-full bg-gold overflow-hidden py-2.5 sm:py-3 border-b border-black/5 z-[100]">
+    return (<div className="relative w-full bg-black/30 backdrop-blur-sm overflow-hidden py-2 border-b border-white/10 z-[100]">
       {/* Container for the sliding effect */}
       <div className="flex whitespace-nowrap animate-marquee group">
         {[1, 2, 3, 4].map((setIndex) => (<div key={setIndex} className="flex items-center gap-12 sm:gap-16 px-6 sm:px-8">
-            {announcements.map((ann, i) => (<div key={`${setIndex}-${i}`} className="flex items-center gap-3 text-black">
+            {announcements.map((ann, i) => (<div key={`${setIndex}-${i}`} className="flex items-center gap-3 text-white/90">
                 <ann.icon className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[2.5px]"/>
                 <span className="text-[10px] sm:text-xs font-black tracking-[0.2em] uppercase">
                   {ann.text}

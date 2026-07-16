@@ -86,7 +86,7 @@ export default function ProfilePage() {
               {[
             { href: "/profile", icon: User, label: "Account Details", active: true },
             { href: "/profile/orders", icon: Package, label: "Order History", active: false },
-        ].map((item) => (<Link key={item.href} href={item.href} className={`flex items-center justify-between px-6 py-4 text-[11px] font-black uppercase tracking-widest transition-all border-b border-[#e2d6c5]/30 last:border-0 ${item.active
+        ].map((item) => (<Link key={item.href} to={item.href} className={`flex items-center justify-between px-6 py-4 text-[11px] font-black uppercase tracking-widest transition-all border-b border-[#e2d6c5]/30 last:border-0 ${item.active
                 ? "bg-amber-50/50 text-amber-900"
                 : "text-[#8c7e6c] hover:bg-amber-50/20 hover:text-amber-700"}`}>
                   <span className="flex items-center gap-4">

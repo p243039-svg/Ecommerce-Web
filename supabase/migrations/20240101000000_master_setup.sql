@@ -140,11 +140,15 @@ CREATE POLICY "users_self_update"  ON users FOR UPDATE USING     (auth.uid() = i
 CREATE POLICY "users_public_read"  ON users FOR SELECT USING     (true);
 
 -- Order access
-CREATE POLICY "orders_self_insert" ON orders FOR INSERT WITH CHECK (auth.uid() = user_id);
-CREATE POLICY "orders_self_read"   ON orders FOR SELECT USING     (auth.uid() = user_id);
+CREATE POLICY "orders_self_insert" ON orders FOR INSERT WITH CHECK (true);
+CREATE POLICY "orders_self_read"   ON orders FOR SELECT USING     (
+  (auth.uid() = user_id) OR 
+  (EXISTS (SELECT 1 FROM users WHERE id = auth.uid() AND role = 'admin'))
+);
 CREATE POLICY "order_items_self_insert" ON order_items FOR INSERT WITH CHECK (true);
 CREATE POLICY "order_items_self_read"   ON order_items FOR SELECT USING (
-  EXISTS (SELECT 1 FROM orders o WHERE o.id = order_id AND o.user_id = auth.uid())
+  (EXISTS (SELECT 1 FROM orders o WHERE o.id = order_id AND o.user_id = auth.uid())) OR 
+  (EXISTS (SELECT 1 FROM users WHERE id = auth.uid() AND role = 'admin'))
 );
 
 -- Notifications
@@ -167,6 +171,9 @@ CREATE POLICY "admin_users_all"          ON users          FOR ALL TO authentica
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS trigger AS $$
 BEGIN
+  -- Delete any orphaned profile with the same email to avoid unique key conflicts
+  DELETE FROM public.users WHERE email = new.email;
+
   INSERT INTO public.users (id, email, first_name, last_name, role)
   VALUES (
     new.id,
@@ -175,7 +182,10 @@ BEGIN
     COALESCE(new.raw_user_meta_data->>'last_name', ''),
     'user'
   )
-  ON CONFLICT (id) DO NOTHING;
+  ON CONFLICT (id) DO UPDATE SET
+    email = EXCLUDED.email,
+    first_name = EXCLUDED.first_name,
+    last_name = EXCLUDED.last_name;
   RETURN new;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
