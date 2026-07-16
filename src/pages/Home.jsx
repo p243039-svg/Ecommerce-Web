@@ -66,53 +66,51 @@ function useTypewriter(prefix, words) {
     const [display, setDisplay] = useState("");
     const [wordIdx, setWordIdx] = useState(0);
     const [charIdx, setCharIdx] = useState(0);
-    const [phase, setPhase] = useState("typing-prefix"); // typing-prefix | pause | deleting | waiting
+    const [isDeleting, setIsDeleting] = useState(false);
 
     useEffect(() => {
         let timer;
-        if (phase === "typing-prefix") {
-            if (charIdx < prefix.length) {
+        const currentWord = words[wordIdx];
+
+        if (!isDeleting) {
+            // Typing phase
+            if (charIdx < prefix.length + currentWord.length) {
                 timer = setTimeout(() => {
-                    setDisplay(prefix.slice(0, charIdx + 1));
+                    const fullStr = prefix + currentWord;
+                    setDisplay(fullStr.slice(0, charIdx + 1));
                     setCharIdx((c) => c + 1);
                 }, TYPE_SPEED);
             } else {
-                // prefix done — start typing first word
-                setCharIdx(0);
-                setPhase("typing-word");
-            }
-        } else if (phase === "typing-word") {
-            const word = words[wordIdx];
-            if (charIdx < word.length) {
+                // Word fully typed, pause then start deleting
                 timer = setTimeout(() => {
-                    setDisplay(prefix + word.slice(0, charIdx + 1));
-                    setCharIdx((c) => c + 1);
-                }, TYPE_SPEED);
-            } else {
-                // word fully typed — pause
-                timer = setTimeout(() => setPhase("deleting"), PAUSE_AFTER);
+                    setIsDeleting(true);
+                }, PAUSE_AFTER);
             }
-        } else if (phase === "deleting") {
-            const word = words[wordIdx];
-            if (charIdx > 0) {
+        } else {
+            // Deleting phase
+            if (charIdx > prefix.length) {
                 timer = setTimeout(() => {
-                    setDisplay(prefix + word.slice(0, charIdx - 1));
+                    const fullStr = prefix + currentWord;
+                    setDisplay(fullStr.slice(0, charIdx - 1));
                     setCharIdx((c) => c - 1);
                 }, DELETE_SPEED);
             } else {
-                // word fully deleted — wait, then type next word
-                setWordIdx((i) => (i + 1) % words.length);
-                timer = setTimeout(() => setPhase("typing-word"), PAUSE_BEFORE);
+                // Word fully deleted back to prefix, cycle to next word
+                timer = setTimeout(() => {
+                    setIsDeleting(false);
+                    setWordIdx((prev) => (prev + 1) % words.length);
+                }, PAUSE_BEFORE);
             }
         }
+
         return () => clearTimeout(timer);
-    }, [phase, charIdx, wordIdx, prefix, words]);
+    }, [charIdx, isDeleting, wordIdx, prefix, words]);
 
     return display;
 }
 
-const HERO_PREFIX = "Refinement in Every Season\nEvery ";
-const HERO_WORDS = ["Stitch!", "Season!", "Piece!", "Detail!", "Stitch!"];
+const HERO_PREFIX = "Timeless Designs For Modern Living\nCrafted In Every ";
+const HERO_WORDS = ["Detail!", "Stitch!", "Cut!", "Thread!"];
 
 export default function HomePage() {
     const [showLoader, setShowLoader] = useState(true);
@@ -301,7 +299,7 @@ export default function HomePage() {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.65, delay: 0.05, ease: EASE }}
                         className="relative z-10 font-bold text-[#0f0f0f] leading-[1.05] tracking-tight whitespace-pre-line"
-                        style={{ fontSize: "clamp(2.0rem, 5vw, 3.8rem)" }}
+                        style={{ fontSize: "clamp(1.8rem, 4.5vw, 3.2rem)" }}
                     >
                         {/* Static prefix portion (before the cycling word) */}
                         {heroText.includes("\n")
@@ -312,7 +310,7 @@ export default function HomePage() {
                                     {/* Everything after the newline — split at prefix end to style the cycling word */}
                                     {(() => {
                                         const after = heroText.split("\n")[1] ?? "";
-                                        const staticPart = "Every "; // the non-cycling part on line 2
+                                        const staticPart = "Crafted In Every "; // the non-cycling part on line 2
                                         const cyclingPart = after.startsWith(staticPart)
                                             ? after.slice(staticPart.length)
                                             : after;

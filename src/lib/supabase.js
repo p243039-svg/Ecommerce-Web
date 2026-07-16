@@ -307,4 +307,9 @@ initializeData();
 
 // Switch to realSupabase to connect to your live Supabase database.
 // Switch to mockClient to run with an offline mock database.
-export const supabase = realSupabase;
+const hasKeys = import.meta.env.VITE_SUPABASE_URL && 
+                import.meta.env.VITE_SUPABASE_URL !== 'https://placeholder.supabase.co' &&
+                import.meta.env.VITE_SUPABASE_ANON_KEY &&
+                import.meta.env.VITE_SUPABASE_ANON_KEY !== 'placeholder';
+
+export const supabase = hasKeys ? realSupabase : mockClient;
