@@ -20,6 +20,9 @@ import ResetPassword from "../pages/ResetPassword";
 import Shipping from "../pages/Shipping";
 import Signup from "../pages/Signup";
 import Wishlist from "../pages/Wishlist";
+import About from "../pages/About";
+import OurScience from "../pages/OurScience";
+import ReturnsRefunds from "../pages/ReturnsRefunds";
 
 // Admin Pages
 import AdminLayout from "../pages/admin/AdminLayout";
@@ -57,6 +60,10 @@ export default function AppRoutes() {
       <Route path="/shipping" element={<Shipping />} />
       <Route path="/signup" element={<Signup />} />
       <Route path="/wishlist" element={<Wishlist />} />
+      <Route path="/about" element={<About />} />
+      <Route path="/our-science" element={<OurScience />} />
+      <Route path="/returns-refunds" element={<ReturnsRefunds />} />
+      <Route path="/terms-conditions" element={<div className="min-h-screen flex items-center justify-center bg-[#f4ebe0] text-[#4a3f35] px-6 py-20"><div className="max-w-2xl text-center"><h1 className="text-4xl font-serif font-black tracking-[0.15em] uppercase mb-6">Terms &amp; Conditions</h1><p className="text-base leading-relaxed text-[#7a6a5a]">By using our site you agree to our terms of service. Please contact us for the full terms document.</p></div></div>} />
 
       {/* Admin Routes wrapped in AdminLayout */}
       <Route path="/admin" element={<AdminLayout />}>

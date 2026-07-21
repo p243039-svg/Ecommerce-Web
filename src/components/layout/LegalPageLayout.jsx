@@ -12,7 +12,7 @@ export function LegalPageLayout({ title, subtitle, children }) {
 
         {/* Content */}
         <div className="prose prose-sm sm:prose-base max-w-none text-gray-600 leading-relaxed font-light animate-fade-in-up">
-           <style jsx global>{`
+           <style>{`
              .legal-content h2 {
                font-family: serif;
                font-size: 1.5rem;

@@ -19,8 +19,8 @@ export function ClientLayout({ children }) {
   const isHomePath = pathname === "/";
   const hideChrome = isAdminPath || isAuthPath;
   return (<>
-    {!hideChrome && !isHomePath && <Navbar />}
-    <main className={`flex-1 ${!hideChrome && !isHomePath ? 'pt-20 lg:pt-24' : ''} pb-20 sm:pb-0`}>{children}</main>
+    {!hideChrome && <Navbar />}
+    <main className={`flex-1 ${!hideChrome && !isHomePath ? 'pt-20 lg:pt-24' : !hideChrome && isHomePath ? 'pt-16 lg:pt-0' : ''} pb-20 sm:pb-0`}>{children}</main>
     {!hideChrome && <Footer />}
     {!hideChrome && <BottomNav />}
     {!isAdminPath && <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />}

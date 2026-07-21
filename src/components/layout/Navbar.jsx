@@ -13,6 +13,7 @@ export function Navbar() {
   const [openNav, setOpenNav] = useState(null);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [shopExpanded, setShopExpanded] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -37,8 +38,19 @@ export function Navbar() {
   const lastScrollY = useRef(0);
 
   useEffect(() => {
-    setMounted(true);
-  }, []);
+    if (isMobileMenuOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isMobileMenuOpen]);
+
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+  }, [pathname]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -105,19 +117,22 @@ export function Navbar() {
 
   const EASE = [0.16, 1, 0.3, 1];
 
+  const isHomePath = pathname === "/";
+
   return (
+    <>
     <motion.header
-      className="fixed top-0 left-0 right-0 z-50 w-full"
+      className={`fixed top-0 left-0 right-0 z-50 w-full${isHomePath ? ' lg:hidden' : ''}`}
       style={{
         height: "72px",
-        backgroundColor: pathname === "/" ? "transparent" : "rgba(255, 255, 255, 0.96)",
+        backgroundColor: pathname === "/" ? "#e8eef2" : "rgba(255, 255, 255, 0.96)",
         backdropFilter: pathname === "/" ? "none" : "blur(8px)",
         borderBottom: pathname === "/" ? "none" : "1px solid rgba(0, 0, 0, 0.05)",
       }}
       initial={{ opacity: 0, y: -90 }}
       animate={{
-        opacity: isVisible ? 1 : 0,
-        y: isVisible ? 0 : -90
+        opacity: (isVisible || isMobileMenuOpen) ? 1 : 0,
+        y: (isVisible || isMobileMenuOpen) ? 0 : -90
       }}
       transition={{ type: "spring", stiffness: 240, damping: 28 }}
     >
@@ -128,7 +143,7 @@ export function Navbar() {
         <div
           className="absolute left-1/2 -translate-x-1/2 flex items-center justify-center pointer-events-auto select-none"
           style={{
-            width: "clamp(260px, 28vw, 380px)",
+            width: "clamp(200px, 48vw, 380px)",
             background: "#ffffff",
             clipPath: "polygon(0 0, 100% 0, 84% 100%, 16% 100%)",
             marginTop: pathname === "/" ? "-16px" : "0px",
@@ -139,7 +154,7 @@ export function Navbar() {
           <Link
             to="/"
             className={cn(
-              "text-[15px] font-black tracking-[0.3em] uppercase text-[#1a1a1a] hover:opacity-75 transition-opacity",
+              "text-[14px] sm:text-[15px] font-black tracking-[0.3em] uppercase text-[#1a1a1a] hover:opacity-75 transition-opacity",
               pathname === "/" ? "pt-1 sm:pt-2" : "pt-0 sm:pt-1"
             )}
             style={{ fontFamily: "'Inter', sans-serif" }}
@@ -346,118 +361,199 @@ export function Navbar() {
           </div>
         </div>
       )}
+    </motion.header>
 
-      {/* MOBILE DRAWER */}
+    {/* ══════════════════════════════════════════════════
+        MOBILE DRAWER — Portaled at top level (z-[9999])
+    ══════════════════════════════════════════════════ */}
+    <div className={cn(
+      "lg:hidden fixed inset-0 z-[9999] pointer-events-none",
+      isMobileMenuOpen ? "pointer-events-auto" : ""
+    )}>
+      {/* Backdrop */}
+      <div
+        className={cn(
+          "absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity duration-300",
+          isMobileMenuOpen ? "opacity-100" : "opacity-0 pointer-events-none"
+        )}
+        onClick={() => setIsMobileMenuOpen(false)}
+      />
+
+      {/* Drawer panel */}
       <div className={cn(
-        "lg:hidden fixed inset-0 z-[120] pointer-events-none transition-all duration-300",
-        isMobileMenuOpen ? "opacity-100" : "opacity-0"
+        "absolute inset-y-0 left-0 w-[300px] max-w-[85vw] bg-white shadow-2xl flex flex-col transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] z-[10000]",
+        isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
       )}>
-        {/* Backdrop */}
-        <div
-          className={cn(
-            "absolute inset-0 bg-black/40 backdrop-blur-xs transition-opacity duration-300",
-            isMobileMenuOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
-          )}
-          onClick={() => setIsMobileMenuOpen(false)}
-        />
 
-        {/* Drawer container */}
-        <div className={cn(
-          "absolute inset-y-0 left-0 w-[300px] max-w-[85vw] bg-white shadow-2xl flex flex-col p-6 transition-transform duration-300 ease-out pointer-events-auto",
-          isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
-        )}>
-          {/* Header */}
-          <div className="flex justify-between items-center pb-6 border-b border-black/5">
-            <Link
-              to="/"
-              onClick={() => setIsMobileMenuOpen(false)}
-              className="text-lg font-serif font-black tracking-[0.2em] text-[#1a1a1a] uppercase"
-            >
-              ANTIQUE
-            </Link>
+        {/* ── Drawer header ── */}
+        <div className="flex items-center justify-between px-6 py-5 border-b border-black/8 shrink-0 bg-white">
+          <Link
+            to="/"
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="text-[15px] font-black tracking-[0.3em] uppercase text-[#1a1a1a]"
+            style={{ fontFamily: "'Inter', sans-serif" }}
+          >
+            ANTIQUE
+          </Link>
+          <button
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-black/5 text-[#1a1a1a] transition-colors"
+            aria-label="Close menu"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+
+        {/* ── Nav links (scrollable) ── */}
+        <div className="flex-1 overflow-y-auto bg-white">
+
+          {/* Home */}
+          <Link
+            to="/"
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="flex items-center justify-between px-6 py-4 border-b border-black/8 text-sm text-[#1a1a1a] hover:bg-black/3 transition-colors"
+          >
+            Home
+          </Link>
+
+          {/* About Us */}
+          <Link
+            to="/about"
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="flex items-center justify-between px-6 py-4 border-b border-black/8 text-sm text-[#1a1a1a] hover:bg-black/3 transition-colors"
+          >
+            About Us
+          </Link>
+
+          {/* Our Science */}
+          <Link
+            to="/our-science"
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="flex items-center justify-between px-6 py-4 border-b border-black/8 text-sm text-[#1a1a1a] hover:bg-black/3 transition-colors"
+          >
+            Our Science
+          </Link>
+
+          {/* Shop (expandable) */}
+          <div>
             <button
-              onClick={() => setIsMobileMenuOpen(false)}
-              className="p-1.5 bg-black/5 rounded-full text-[#1a1a1a] hover:bg-black/10 transition-colors"
+              onClick={() => setShopExpanded((v) => !v)}
+              className="w-full flex items-center justify-between px-6 py-4 border-b border-black/8 text-sm text-[#1a1a1a] hover:bg-black/3 transition-colors"
             >
-              <X className="w-4.5 h-4.5" />
+              <span>Shop</span>
+              <span className="text-lg leading-none text-[#1a1a1a]/40">{shopExpanded ? "−" : "+"}</span>
             </button>
-          </div>
-
-          {/* Scrollable Navigation */}
-          <div className="flex-1 overflow-y-auto py-6 space-y-6 scrollbar-none">
-            <div className="space-y-4">
-              <p className="text-[10px] font-black text-black/40 uppercase tracking-[0.25em] border-b border-black/5 pb-2">Collections</p>
-              <div className="space-y-3">
-                {navLinks.map((link) => (
-                  <Link
-                    key={link.href}
-                    to={link.href}
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className="block text-2xl font-serif text-[#1a1a1a] hover:text-black/60 transition-colors"
-                  >
-                    {link.label}
-                  </Link>
-                ))}
-              </div>
-            </div>
-
-            <div className="pt-6 border-t border-black/5 space-y-5">
-              <Link
-                to="/wishlist"
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="flex items-center gap-3 text-xs font-black uppercase tracking-widest text-black/50 hover:text-black transition-colors"
-              >
-                <Heart className="w-4 h-4 text-black/50" /> Wishlist
-              </Link>
-
-              {user ? (
-                <div className="space-y-4 pt-4 border-t border-black/5">
-                  <p className="text-[10px] font-black text-black/40 uppercase tracking-[0.25em] border-b border-black/5 pb-2">Account</p>
-                  <div className="space-y-2">
-                    {isAdmin && (
-                      <Link
-                        to="/admin"
-                        onClick={() => setIsMobileMenuOpen(false)}
-                        className="flex items-center gap-3 text-xs font-black uppercase tracking-widest text-amber-900 hover:text-amber-700 transition-colors"
-                      >
-                        <Settings className="w-4 h-4" /> Admin Panel
-                      </Link>
-                    )}
-                    <Link
-                      to="/profile"
-                      onClick={() => setIsMobileMenuOpen(false)}
-                      className="flex items-center gap-3 text-xs font-black uppercase tracking-widest text-black/50 hover:text-[#1a1a1a] transition-colors"
-                    >
-                      <User className="w-4 h-4 text-black/50" /> My Profile
-                    </Link>
-                    <Link
-                      to="/profile/orders"
-                      onClick={() => setIsMobileMenuOpen(false)}
-                      className="flex items-center gap-3 text-xs font-black uppercase tracking-widest text-black/50 hover:text-[#1a1a1a] transition-colors"
-                    >
-                      <Package className="w-4 h-4 text-black/50" /> My Orders
-                    </Link>
-                  </div>
-                  <button
-                    onClick={handleLogout}
-                    className="w-full flex items-center justify-center gap-3 py-3 rounded-xl bg-red-50 text-red-600 font-black uppercase tracking-widest text-[9px] hover:bg-red-100 transition-colors mt-4"
-                  >
-                    <LogOut className="w-4 h-4" /> Sign Out
-                  </button>
-                </div>
-              ) : (
-                <Link
-                  to="/login"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="flex items-center gap-3 text-sm font-black uppercase tracking-widest text-[#1a1a1a] hover:text-black transition-colors pt-2 group"
+            <AnimatePresence initial={false}>
+              {shopExpanded && (
+                <motion.div
+                  key="shop-sub"
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+                  style={{ overflow: "hidden" }}
                 >
-                  Sign In <ArrowRight className="w-4 h-4 ml-auto group-hover:translate-x-1.5 transition-transform" />
-                </Link>
+                  {[
+                    { label: "All Products",  to: "/products" },
+                    { label: "Men",           to: "/products?category=men" },
+                    { label: "Women",         to: "/products?category=women" },
+                    { label: "Trending",      to: "/products?category=trending" },
+                    { label: "Accessories",   to: "/products?category=accessories" },
+                  ].map(({ label, to }) => (
+                    <Link
+                      key={to}
+                      to={to}
+                      onClick={() => { setIsMobileMenuOpen(false); setShopExpanded(false); }}
+                      className="flex items-center px-10 py-3 border-b border-black/5 text-xs text-[#1a1a1a]/60 hover:text-[#1a1a1a] hover:bg-black/3 transition-colors"
+                    >
+                      {label}
+                    </Link>
+                  ))}
+                </motion.div>
               )}
-            </div>
+            </AnimatePresence>
           </div>
+
+          {/* Contact Us */}
+          <Link
+            to="/contact"
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="flex items-center justify-between px-6 py-4 border-b border-black/8 text-sm text-[#1a1a1a] hover:bg-black/3 transition-colors"
+          >
+            Contact Us
+          </Link>
+
+          {/* Wishlist */}
+          <Link
+            to="/wishlist"
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="flex items-center gap-3 px-6 py-4 border-b border-black/8 text-sm text-[#1a1a1a] hover:bg-black/3 transition-colors"
+          >
+            <Heart className="w-4 h-4 text-[#1a1a1a]/50" />
+            Wishlist
+          </Link>
+
+          {/* Admin link (if admin) */}
+          {mounted && user && isAdmin && (
+            <Link
+              to="/admin"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="flex items-center gap-3 px-6 py-4 border-b border-black/8 text-sm text-amber-800 hover:bg-amber-50 transition-colors"
+            >
+              <Settings className="w-4 h-4" />
+              Admin Panel
+            </Link>
+          )}
+        </div>
+
+        {/* ── Bottom account section (pinned) ── */}
+        <div className="px-6 py-6 border-t border-black/8 shrink-0 bg-white">
+          <p className="text-xs font-bold text-[#1a1a1a]/40 uppercase tracking-[0.2em] mb-4">My account</p>
+
+          {mounted && user ? (
+            <div className="space-y-3">
+              <Link
+                to="/profile"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-[#1A1A1A] text-white text-xs font-bold uppercase tracking-[0.12em] hover:bg-black transition-colors"
+              >
+                <User className="w-4 h-4" /> My Profile
+              </Link>
+              <Link
+                to="/profile/orders"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="flex items-center justify-center gap-2 w-full py-3 rounded-xl border border-black/15 text-[#1a1a1a] text-xs font-bold uppercase tracking-[0.12em] hover:bg-black/5 transition-colors"
+              >
+                <Package className="w-4 h-4" /> My Orders
+              </Link>
+              <button
+                onClick={handleLogout}
+                className="flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-red-50 text-red-600 text-xs font-bold uppercase tracking-[0.12em] hover:bg-red-100 transition-colors"
+              >
+                <LogOut className="w-4 h-4" /> Sign Out
+              </button>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <Link
+                to="/login"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="flex items-center justify-center gap-2 w-full py-3.5 rounded-xl bg-[#1A1A1A] text-white text-xs font-bold uppercase tracking-[0.15em] hover:bg-black transition-colors"
+              >
+                <User className="w-4 h-4" /> Log in
+              </Link>
+              <Link
+                to="/signup"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="flex items-center justify-center w-full py-3.5 rounded-xl border border-black/20 text-[#1a1a1a] text-xs font-bold uppercase tracking-[0.15em] hover:bg-black/5 transition-colors"
+              >
+                Register
+              </Link>
+            </div>
+          )}
         </div>
       </div>
-    </motion.header>
+    </div>
+    </>
   );
 }

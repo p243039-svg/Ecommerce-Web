@@ -103,7 +103,7 @@ export function NotificationDrawer({ isOpen, onClose }) {
         </div>
       </aside>
 
-      <style jsx global>{`
+      <style>{`
         .animate-fade-in {
           animation: fadeIn 0.3s ease-out;
         }

@@ -75,12 +75,12 @@ function ProductsContent() {
   const fetchData = async () => {
     setIsDataLoading(true);
     const [prodRes, catRes] = await Promise.all([
-      supabase.from("products").select("*, images:product_images(*)").eq("is_active", true),
+      supabase.from("products").select("*, images:product_images(*)"),
       supabase.from("categories").select("*").order("sort_order", { ascending: true }),
     ]);
     if (prodRes.data) setAllProducts(prodRes.data);
     if (catRes.data) setAllCats(catRes.data);
-    setTimeout(() => setIsDataLoading(false), 200);
+    setIsDataLoading(false);
   };
 
   const allBrands = useMemo(() => {
@@ -105,8 +105,15 @@ function ProductsContent() {
     if (isDataLoading) return [];
     let result = [...allProducts];
     if (activeCategory) {
-      const cat = allCats.find((c) => c.slug === activeCategory);
-      if (cat) result = result.filter((p) => p.category_id === cat.id);
+      const cat = allCats.find((c) => c.slug === activeCategory || c.name.toLowerCase() === activeCategory.toLowerCase());
+      if (cat) {
+        result = result.filter((p) => p.category_id === cat.id);
+      } else {
+        result = result.filter((p) => 
+          p.category?.toLowerCase() === activeCategory.toLowerCase() || 
+          p.tags?.some((t) => t.toLowerCase() === activeCategory.toLowerCase())
+        );
+      }
     }
     if (activeSearch) {
       const q = activeSearch.toLowerCase();

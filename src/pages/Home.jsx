@@ -16,6 +16,7 @@ import { StoreName } from "@/components/ui/StoreName";
 import { Button } from "@/components/ui/Button";
 import { supabase } from "@/lib/supabase";
 import { TerminalLoader } from "@/components/ui/TerminalLoader";
+import { useAuthStore } from "@/stores/useAuthStore";
 
 // ---- shared motion presets (one consistent easing curve site-wide) ----
 const EASE = [0.16, 1, 0.3, 1];
@@ -28,6 +29,7 @@ const fadeUp = {
         transition: { duration: 0.6, delay: i * 0.08, ease: EASE },
     }),
 };
+
 
 const reveal = {
     hidden: { opacity: 0, y: 24, scale: 0.98 },
@@ -113,6 +115,7 @@ const HERO_PREFIX = "Timeless Designs For Modern Living\nCrafted In Every ";
 const HERO_WORDS = ["Detail!", "Stitch!", "Cut!", "Thread!"];
 
 export default function HomePage() {
+    const user = useAuthStore((s) => s.user);
     const [showLoader, setShowLoader] = useState(true);
     const handleLoaderComplete = useCallback(() => {
         setShowLoader(false);
@@ -146,20 +149,36 @@ export default function HomePage() {
     useEffect(() => {
         async function loadData() {
             // Load Featured
-            const { data: featured } = await supabase
+            let { data: featured } = await supabase
                 .from("products")
                 .select("*, images:product_images(*)")
                 .eq("is_featured", true)
                 .limit(4);
-            setFeaturedProducts(featured || []);
+            
+            if (!featured || featured.length === 0) {
+                const { data: fallbackFeatured } = await supabase
+                    .from("products")
+                    .select("*, images:product_images(*)")
+                    .limit(4);
+                featured = fallbackFeatured || [];
+            }
+            setFeaturedProducts(featured);
 
             // Load Top Selling
-            const { data: topSelling } = await supabase
+            let { data: topSelling } = await supabase
                 .from("products")
                 .select("*, images:product_images(*)")
                 .order("review_count", { ascending: false })
                 .limit(8);
-            setTopSellingProducts(topSelling || []);
+
+            if (!topSelling || topSelling.length === 0) {
+                const { data: fallbackTop } = await supabase
+                    .from("products")
+                    .select("*, images:product_images(*)")
+                    .limit(8);
+                topSelling = fallbackTop || [];
+            }
+            setTopSellingProducts(topSelling);
         }
         loadData();
     }, []);
@@ -198,12 +217,12 @@ export default function HomePage() {
                     }}
                 />
 
-                {/* ─── NAVBAR — VEXO Trapezoid Shape ───────────────────── */}
+                {/* ─── NAVBAR — Desktop Only ─────────────────────────── */}
                 <motion.header
                     initial={{ opacity: 0, y: -12 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, ease: EASE }}
-                    className="relative z-50 w-full"
+                    className="hidden lg:block relative z-50 w-full"
                     style={{ height: "72px" }}
                 >
                     {/* ── Center White Trapezoid Tab (VEXO shape) ── */}
@@ -276,11 +295,19 @@ export default function HomePage() {
                             <Link to="/products?category=seasonal" className="hover:opacity-60 transition-opacity">SEASONAL</Link>
                             <Link to="/products?category=accessories" className="hover:opacity-60 transition-opacity">ACCESSORIES</Link>
                         </div>
-                        <Link to="/login">
-                            <button className="bg-[#1A1A1A] text-white text-[10px] font-bold tracking-[0.12em] px-5 py-2.5 rounded-full hover:bg-black transition-colors uppercase">
-                                Sign In / Up
-                            </button>
-                        </Link>
+                        {user ? (
+                            <Link to="/profile">
+                                <button className="w-9 h-9 rounded-full bg-[#1A1A1A] text-white flex items-center justify-center text-[10px] font-black shadow-sm hover:bg-black transition-colors" title="My Profile">
+                                    {user.first_name?.charAt(0).toUpperCase() || user.email?.charAt(0).toUpperCase() || "U"}
+                                </button>
+                            </Link>
+                        ) : (
+                            <Link to="/login">
+                                <button className="bg-[#1A1A1A] text-white text-[10px] font-bold tracking-[0.12em] px-5 py-2.5 rounded-full hover:bg-black transition-colors uppercase">
+                                    Sign In / Up
+                                </button>
+                            </Link>
+                        )}
                         <Link to="/cart">
                             <button className="w-9 h-9 flex items-center justify-center rounded-full bg-[#1A1A1A] text-white hover:bg-black transition-colors shrink-0">
                                 <Lock className="w-3.5 h-3.5" />
@@ -768,56 +795,8 @@ export default function HomePage() {
                 </div>
             </motion.section>
 
-            {/* ---------------- NEWSLETTER ---------------- */}
-            <motion.section
-                variants={reveal}
-                initial="hidden"
-                whileInView="show"
-                viewport={{ once: true, margin: "-80px" }}
-                className="py-24 bg-[#141414] text-white"
-            >
-                <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-10">
 
-                    <div className="space-y-4">
-                        <div className="inline-flex p-3 rounded-full bg-white/10">
-                            <Mail className="w-5 h-5" />
-                        </div>
-                        <h2 className="text-3xl sm:text-4xl font-bold">Join the Atelier Circle.</h2>
-                        <p className="text-xs sm:text-sm text-white/50 uppercase tracking-[0.2em] max-w-md mx-auto">
-                            Private access to new releases and invitations to seasonal previews.
-                        </p>
-                    </div>
 
-                    {isSubscribed ? (
-                        <motion.div
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            className="p-4 rounded-2xl bg-white/10 max-w-md mx-auto"
-                        >
-                            <p className="text-sm font-semibold">Thank you for subscribing.</p>
-                            <p className="text-[10px] text-white/50 mt-1">An invitation has been dispatched to your email.</p>
-                        </motion.div>
-                    ) : (
-                        <form onSubmit={handleSubscribe} className="max-w-md mx-auto flex flex-col sm:flex-row gap-3">
-                            <input
-                                type="email"
-                                required
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                placeholder="Enter your email address"
-                                className="flex-1 px-4 py-3 bg-white/10 rounded-full text-sm placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-white/30 text-white transition-all"
-                            />
-                            <button
-                                type="submit"
-                                className="px-6 py-3 bg-white hover:bg-white/90 text-[#141414] rounded-full text-xs font-semibold uppercase tracking-wider transition-colors shrink-0"
-                            >
-                                Subscribe
-                            </button>
-                        </form>
-                    )}
-
-                </div>
-            </motion.section>
 
         </div>
     );
